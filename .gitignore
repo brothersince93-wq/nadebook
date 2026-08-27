@@ -1,0 +1,20 @@
+# ---------------------------------------------------------------
+# NE JAMAIS COMMITER LES VIDEOS.
+#
+# Les clips csnades.app sont autorises pour un usage PERSONNEL.
+# Les pousser sur un depot -- meme prive -- publie sur GitHub Pages
+# les rendrait accessibles publiquement : ce serait une republication.
+# Sur le depot, il n'y a que le code de l'app.
+# ---------------------------------------------------------------
+media/
+data/
+*.mp4
+*.webm
+*.mov
+
+# sauvegardes exportees depuis l'app (elles contiennent les videos)
+nadebook-*.json
+
+node_modules/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nade Book — sélecteur</title>
+<style>
+:root{
+  --bg:#0b0e14; --card:#161c29; --hi:#1d2534; --line:#263145;
+  --txt:#e8edf7; --txt2:#8d9ab4; --txt3:#5c6980; --acc:#ff6b1a;
+  --smoke:#b9c4d6; --flash:#ffd23f; --molly:#ff6b3d; --he:#8fbf3f;
+  --t:#e0a83c; --ct:#4a90d9;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:10;background:rgba(11,14,20,.96);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 20px}
+h1{margin:0 0 3px;font-size:19px;letter-spacing:-.3px}
+.sub{margin:0;font-size:12.5px;color:var(--txt2)}
+.rows{max-width:1080px;margin:0 auto;padding:16px 20px 120px}
+
+.bar{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.chip{padding:6px 12px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer}
+.chip.on{background:var(--txt);border-color:var(--txt);color:#0b0e14}
+.chip.smoke.on{background:var(--smoke);border-color:var(--smoke);color:#0b0e14}
+.chip.flash.on{background:var(--flash);border-color:var(--flash);color:#241d00}
+.chip.molly.on{background:var(--molly);border-color:var(--molly);color:#230a02}
+.chip.he.on{background:var(--he);border-color:var(--he);color:#111c00}
+.chip.T.on{background:var(--t);border-color:var(--t);color:#221703}
+.chip.CT.on{background:var(--ct);border-color:var(--ct);color:#03121f}
+input[type=search]{flex:1;min-width:180px;padding:7px 12px;border-radius:9px;
+  background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:14px}
+input[type=search]:focus{outline:none;border-color:var(--acc)}
+
+.row{display:flex;gap:12px;align-items:flex-start;padding:11px 13px;margin-bottom:7px;
+  background:var(--card);border:1px solid var(--line);border-radius:12px}
+.row.sel{border-color:var(--acc);background:#1c1710}
+.row input[type=checkbox]{width:19px;height:19px;accent-color:var(--acc);
+  margin-top:2px;cursor:pointer;flex:none}
+.mid{flex:1;min-width:0}
+.tt{font-size:14.5px;font-weight:650;letter-spacing:-.15px}
+.rt{font-size:12.5px;color:var(--txt2);margin-top:1px}
+.tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;align-items:center}
+.tag{font-size:10px;font-weight:750;letter-spacing:.4px;text-transform:uppercase;
+  padding:2.5px 6px;border-radius:5px;background:var(--hi);color:var(--txt2)}
+.tag.T{background:rgba(224,168,60,.16);color:var(--t)}
+.tag.CT{background:rgba(74,144,217,.16);color:var(--ct)}
+.tag.smoke{background:rgba(185,196,214,.15);color:var(--smoke)}
+.tag.flash{background:rgba(255,210,63,.15);color:var(--flash)}
+.tag.molly{background:rgba(255,107,61,.15);color:var(--molly)}
+.tag.he{background:rgba(143,191,63,.15);color:var(--he)}
+.meta{font-size:11.5px;color:var(--txt3);white-space:nowrap}
+.acts{display:flex;flex-direction:column;gap:5px;flex:none}
+.btn{padding:5px 11px;border-radius:8px;background:var(--hi);border:1px solid var(--line);
+  color:var(--txt2);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;
+  text-align:center;white-space:nowrap}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+video{width:100%;margin-top:10px;border-radius:9px;background:#000;display:block}
+
+footer{position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:rgba(18,23,34,.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);padding:13px 20px}
+.fin{max-width:1080px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.count{font-size:15px;font-weight:700}
+.count b{color:var(--acc)}
+.warn{color:var(--flash)}
+.grow{flex:1}
+.go{padding:10px 20px;border-radius:10px;background:var(--acc);color:#fff;
+  border:0;font-size:14.5px;font-weight:700;cursor:pointer}
+.go:disabled{opacity:.35;cursor:default}
+.ghost{padding:9px 15px;border-radius:10px;background:transparent;
+  border:1px solid var(--line);color:var(--txt2);font-size:13.5px;cursor:pointer}
+.empty{text-align:center;padding:60px;color:var(--txt3)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sélecteur de lineups</h1>
+  <p class="sub" id="sub">chargement…</p>
+  <div class="bar" id="f-map"></div>
+  <div class="bar">
+    <span id="f-side"></span><span id="f-type"></span>
+    <input type="search" id="q" placeholder="Rechercher un spot…">
+    <button class="ghost" id="only-sel">Voir la sélection</button>
+  </div>
+</header>
+
+<div class="rows" id="rows"></div>
+
+<footer>
+  <div class="fin">
+    <span class="count" id="cnt">0 sélectionné</span>
+    <span class="meta" id="size">—</span>
+    <span class="grow"></span>
+    <button class="ghost" id="clear">Vider</button>
+    <button class="ghost" id="export" disabled>Exporter (.json)</button>
+    <button class="go" id="send" disabled>Enregistrer la sélection</button>
+  </div>
+</footer>
+
+<script>
+const KEY = 'nadebook-selection';
+const MAPS = ['mirage','dust2','inferno','ancient'];
+const TYPES = ['smoke','flash','molly','he'];
+const TECH = {stand:'Statique',jump:'Jump-throw',run:'Run-throw',runjump:'Run+Jump',walk:'Walk-throw'};
+
+let ITEMS = [];
+let sel = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+let fMap = 'all', fSide = 'all', fType = 'all', q = '', onlySel = false;
+
+const $ = s => document.querySelector(s);
+const mo = b => (b/1048576).toFixed(1);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- filtres ---------- */
+function chips(host, values, current, onPick, cls=false){
+  host.innerHTML = '';
+  for (const v of values){
+    const b = document.createElement('button');
+    b.className = 'chip ' + (cls ? v.id : '') + (current === v.id ? ' on' : '');
+    b.textContent = v.label;
+    b.onclick = () => { onPick(v.id); render(); };
+    host.appendChild(b);
+  }
+}
+
+function buildFilters(){
+  chips($('#f-map'),
+    [{id:'all',label:'Toutes'}, ...MAPS.map(m=>({id:m,label:m[0].toUpperCase()+m.slice(1)}))],
+    fMap, v => fMap = v);
+  chips($('#f-side'),
+    [{id:'all',label:'T+CT'},{id:'T',label:'T'},{id:'CT',label:'CT'}],
+    fSide, v => fSide = v, true);
+  chips($('#f-type'),
+    [{id:'all',label:'Tous'}, ...TYPES.map(t=>({id:t,label:t==='molly'?'Molo':t[0].toUpperCase()+t.slice(1)}))],
+    fType, v => fType = v, true);
+}
+
+function filtered(){
+  return ITEMS.filter(i =>
+    (fMap==='all'  || i.map===fMap) &&
+    (fSide==='all' || i.side===fSide) &&
+    (fType==='all' || i.type===fType) &&
+    (!onlySel || sel.has(i.srcId)) &&
+    (!q || (i.title+' '+i.from+' '+i.to+' '+i.description).toLowerCase().includes(q)));
+}
+
+/* ---------- rendu ---------- */
+function render(){
+  buildFilters();
+  const list = filtered();
+  $('#rows').innerHTML = list.length ? '' : '<div class="empty">Aucun résultat</div>';
+
+  for (const i of list){
+    const d = document.createElement('div');
+    d.className = 'row' + (sel.has(i.srcId) ? ' sel' : '');
+    d.innerHTML = `
+      <input type="checkbox" ${sel.has(i.srcId)?'checked':''}>
+      <div class="mid">
+        <div class="tt">${esc(i.title || 'Sans titre')}</div>
+        <div class="rt">${esc(i.from)} &rarr; ${esc(i.to)}</div>
+        <div class="tags">
+          <span class="tag">${i.map}</span>
+          <span class="tag ${i.side}">${i.side}</span>
+          <span class="tag ${i.type}">${i.type==='molly'?'molo':i.type}</span>
+          <span class="tag">${TECH[i.tech]||i.tech}</span>
+          ${i.throwType?`<span class="tag">${esc(i.throwType)}</span>`:''}
+          <span class="meta">${mo(i.bytes)} Mo &middot; ${i.views} vues</span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn prev">Aperçu</button>
+        <a class="btn" href="${i.sourceUrl}" target="_blank" rel="noopener">Source</a>
+      </div>`;
+
+    d.querySelector('input').onchange = e => {
+      e.target.checked ? sel.add(i.srcId) : sel.delete(i.srcId);
+      d.classList.toggle('sel', e.target.checked);
+      save();
+    };
+    d.querySelector('.prev').onclick = (e) => {
+      const old = d.querySelector('video');
+      if (old) { old.remove(); e.target.textContent = 'Aperçu'; return; }
+      const v = document.createElement('video');
+      v.src = i.videoUrl; v.controls = true; v.loop = true; v.muted = true; v.autoplay = true;
+      d.querySelector('.mid').appendChild(v);
+      e.target.textContent = 'Fermer';
+    };
+    $('#rows').appendChild(d);
+  }
+  save();
+}
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify([...sel]));
+  const picked = ITEMS.filter(i => sel.has(i.srcId));
+  const bytes = picked.reduce((a,i) => a + (i.bytes||0), 0);
+  $('#cnt').textContent = picked.length + ' sélectionné' + (picked.length>1?'s':'');
+
+  const perMap = MAPS.map(m => m[0].toUpperCase() + ':' + picked.filter(p=>p.map===m).length).join('  ');
+  const big = bytes > 700*1048576;
+  $('#size').innerHTML = `<span class="${big?'warn':''}">${mo(bytes)} Mo</span> &nbsp; ${perMap}`;
+  $('#export').disabled = picked.length === 0;
+  $('#send').disabled = picked.length === 0;
+}
+
+/** Le format transmis, identique pour l'export fichier et l'envoi direct. */
+function payload(){
+  const picked = ITEMS.filter(i => sel.has(i.srcId));
+  return {
+    source: 'https://csnades.app',
+    note: 'Selection personnelle. Videos utilisees avec autorisation des auteurs, usage personnel.',
+    createdAt: new Date().toISOString(),
+    count: picked.length,
+    bytes: picked.reduce((a,i)=>a+(i.bytes||0),0),
+    ids: picked.map(p => p.srcId),
+  };
+}
+
+/* ---------- export ---------- */
+$('#export').onclick = () => {
+  const blob = new Blob([JSON.stringify(payload(), null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'selection.json';
+  a.click();
+};
+
+/* Envoi direct : écrit data/selection.json via le serveur local. */
+$('#send').onclick = async (e) => {
+  const btn = e.target, before = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try {
+    const r = await fetch('/api/selection', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload()),
+    });
+    if (!r.ok) throw new Error();
+    btn.textContent = '✓ Enregistré dans data/selection.json';
+    setTimeout(()=>{ btn.textContent = before; btn.disabled = false; }, 3500);
+  } catch {
+    btn.textContent = 'Échec — serveur lancé ?';
+    setTimeout(()=>{ btn.textContent = before; btn.disabled = false; }, 3500);
+  }
+};
+
+$('#clear').onclick = () => { if(confirm('Vider la sélection ?')){ sel.clear(); render(); } };
+$('#only-sel').onclick = e => { onlySel = !onlySel; e.target.textContent = onlySel ? 'Voir tout' : 'Voir la sélection'; render(); };
+$('#q').oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+
+/* ---------- démarrage ---------- */
+fetch('../data/csnades-index.json').then(r=>r.json()).then(async d => {
+  ITEMS = d.items.filter(i => i.videoUrl);
+  const tot = ITEMS.reduce((a,i)=>a+(i.bytes||0),0);
+  $('#sub').textContent = `${ITEMS.length} lineups disponibles (${(tot/1073741824).toFixed(2)} Go) — vise ~12 par map`;
+
+  // Une sélection déjà enregistrée réapparaît pré-cochée :
+  // on ajuste plutôt que de repartir de zéro.
+  if (sel.size === 0) {
+    try {
+      const s = await (await fetch('../data/selection.json', {cache:'no-store'})).json();
+      (s.ids || []).forEach(id => sel.add(id));
+      if (sel.size) $('#sub').textContent += ` — ${sel.size} déjà sélectionnés`;
+    } catch {}
+  }
+  render();
+}).catch(() => {
+  $('#sub').textContent = 'data/csnades-index.json introuvable — lance d\'abord : node tools/fetch-index.js';
+});
+</script>
+</body>
+</html>

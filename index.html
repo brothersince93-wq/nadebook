@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Nade Book</title>
+<meta name="theme-color" content="#0b0e14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nade Book">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ======================= VUE : LISTE DES MAPS ======================= -->
+  <section class="view" id="view-maps">
+    <header class="topbar">
+      <div class="topbar-titles">
+        <h1>Nade Book</h1>
+        <p class="sub" id="stat-line">&mdash;</p>
+      </div>
+      <button class="icon-btn" id="btn-settings" aria-label="Reglages">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="scroll">
+      <div class="hint" id="empty-hint" hidden></div>
+      <div class="quick-row">
+        <button class="quick-card fav" data-quick="fav">
+          <span class="quick-ico">&#9733;</span>
+          <span class="quick-lbl">Favoris</span>
+          <span class="quick-count" id="count-fav">0</span>
+        </button>
+        <button class="quick-card all" data-quick="all">
+          <span class="quick-ico">&#9678;</span>
+          <span class="quick-lbl">Tout</span>
+          <span class="quick-count" id="count-all">0</span>
+        </button>
+      </div>
+
+      <h2 class="section-title">Maps</h2>
+      <div class="map-grid" id="map-grid"></div>
+      <div class="pad-bottom"></div>
+    </div>
+  </section>
+
+  <!-- ======================= VUE : LISTE DES LINEUPS ======================= -->
+  <section class="view" id="view-list" hidden>
+    <header class="topbar">
+      <button class="icon-btn back" id="btn-back-maps" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="topbar-titles">
+        <h1 id="list-title">Map</h1>
+        <p class="sub" id="list-sub">&mdash;</p>
+      </div>
+    </header>
+
+    <div class="filters">
+      <div class="chip-row" id="side-filter">
+        <button class="chip active" data-side="all">Tous</button>
+        <button class="chip side-t" data-side="T">T</button>
+        <button class="chip side-ct" data-side="CT">CT</button>
+      </div>
+      <div class="chip-row" id="type-filter">
+        <button class="chip active" data-type="all">Tous</button>
+        <button class="chip t-smoke" data-type="smoke"><i></i>Smoke</button>
+        <button class="chip t-flash" data-type="flash"><i></i>Flash</button>
+        <button class="chip t-molly" data-type="molly"><i></i>Molo</button>
+        <button class="chip t-he"    data-type="he"><i></i>HE</button>
+      </div>
+      <div class="search-wrap">
+        <input type="search" id="search" placeholder="Rechercher (spot, note...)" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="scroll" id="lineup-scroll">
+      <div class="lineup-list" id="lineup-list"></div>
+      <div class="empty" id="list-empty" hidden>
+        <p class="empty-ico">&#9673;</p>
+        <p class="empty-t">Aucun lineup ici</p>
+        <p class="empty-s">Appuie sur + pour en ajouter un.</p>
+      </div>
+      <div class="pad-bottom"></div>
+    </div>
+
+    <button class="fab" id="btn-add" aria-label="Ajouter un lineup">+</button>
+  </section>
+
+  <!-- ======================= VUE : DETAIL ======================= -->
+  <section class="view detail" id="view-detail" hidden>
+    <header class="topbar detail-bar">
+      <button class="icon-btn back" id="btn-back-list" aria-label="Retour">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="spacer"></div>
+      <button class="icon-btn star" id="btn-fav" aria-label="Favori">&#9733;</button>
+      <button class="icon-btn" id="btn-edit" aria-label="Modifier">
+        <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+    </header>
+
+    <div class="scroll" id="detail-scroll">
+      <div class="media-stage" id="media-stage"></div>
+      <div class="media-dots" id="media-dots"></div>
+      <div class="chapters" id="chapters"></div>
+
+      <div class="detail-body">
+        <div class="detail-tags" id="detail-tags"></div>
+        <h2 id="detail-title">&mdash;</h2>
+        <div class="route" id="detail-route"></div>
+        <div class="tech" id="detail-tech"></div>
+        <p class="notes" id="detail-notes"></p>
+        <a class="source-link" id="detail-source" hidden target="_blank" rel="noopener">
+          <span>Fiche d'origine sur <b>csnades.app</b></span>
+          <span class="arrow-out">&#8599;</span>
+        </a>
+      </div>
+      <div class="pad-bottom"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ======================= FEUILLE : FORMULAIRE ======================= -->
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<section class="sheet" id="sheet-form" hidden>
+  <div class="sheet-head">
+    <button class="txt-btn" id="form-cancel">Annuler</button>
+    <strong id="form-title">Nouveau lineup</strong>
+    <button class="txt-btn accent" id="form-save">OK</button>
+  </div>
+  <div class="sheet-scroll">
+    <form id="form" onsubmit="return false">
+
+      <label class="fld">
+        <span>Titre</span>
+        <input id="f-title" placeholder="ex. Smoke Window jump-throw">
+      </label>
+
+      <div class="fld-row">
+        <label class="fld">
+          <span>Map</span>
+          <select id="f-map"></select>
+        </label>
+        <label class="fld">
+          <span>Side</span>
+          <select id="f-side">
+            <option value="T">T</option>
+            <option value="CT">CT</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="fld">
+        <span>Type de grenade</span>
+        <div class="seg" id="f-type">
+          <button type="button" class="seg-b t-smoke active" data-v="smoke">Smoke</button>
+          <button type="button" class="seg-b t-flash" data-v="flash">Flash</button>
+          <button type="button" class="seg-b t-molly" data-v="molly">Molo</button>
+          <button type="button" class="seg-b t-he"    data-v="he">HE</button>
+        </div>
+      </div>
+
+      <div class="fld-row">
+        <label class="fld">
+          <span>Depuis</span>
+          <input id="f-from" placeholder="ex. T Spawn">
+        </label>
+        <label class="fld">
+          <span>Vers</span>
+          <input id="f-to" placeholder="ex. Window">
+        </label>
+      </div>
+
+      <div class="fld">
+        <span>Technique</span>
+        <div class="seg wrap" id="f-tech">
+          <button type="button" class="seg-b active" data-v="">&mdash;</button>
+          <button type="button" class="seg-b" data-v="stand">Statique</button>
+          <button type="button" class="seg-b" data-v="jump">Jump-throw</button>
+          <button type="button" class="seg-b" data-v="run">Run-throw</button>
+          <button type="button" class="seg-b" data-v="runjump">Run + Jump</button>
+          <button type="button" class="seg-b" data-v="walk">Walk-throw</button>
+        </div>
+      </div>
+
+      <label class="fld">
+        <span>Notes</span>
+        <textarea id="f-notes" rows="3" placeholder="Aligner le coin du toit sur le crosshair, clic gauche..."></textarea>
+      </label>
+
+      <div class="fld">
+        <span>Medias (video, GIF, image)</span>
+        <div class="media-picker">
+          <label class="pick-btn">
+            <input type="file" id="f-file" accept="video/*,image/*" multiple hidden>
+            <span>+ Fichiers</span>
+          </label>
+          <button type="button" class="pick-btn" id="f-link-btn">Lien</button>
+        </div>
+        <div class="thumbs" id="f-thumbs"></div>
+      </div>
+
+      <button type="button" class="danger-btn" id="f-delete" hidden>Supprimer ce lineup</button>
+      <div class="pad-bottom"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ======================= FEUILLE : REGLAGES ======================= -->
+<section class="sheet" id="sheet-settings" hidden>
+  <div class="sheet-head">
+    <button class="txt-btn" id="set-close">Fermer</button>
+    <strong>Reglages</strong>
+    <span style="width:60px"></span>
+  </div>
+  <div class="sheet-scroll">
+    <div class="set-group">
+      <p class="set-note" id="storage-note">&mdash;</p>
+    </div>
+    <div class="set-group">
+      <button class="set-row" id="btn-local" hidden>
+        <span class="set-ico">&#9889;</span><span>Importer depuis le PC<br><small style="color:var(--txt-3)">directement depuis media/ — test local</small></span>
+      </button>
+      <label class="set-row">
+        <input type="file" id="bundle-file" accept=".json,application/json,video/*,image/*" multiple hidden>
+        <span class="set-ico">&#128230;</span><span>Importer un paquet<br><small style="color:var(--txt-3)">le .json + les vidéos, tout d'un coup</small></span>
+      </label>
+    </div>
+    <div class="set-group">
+      <button class="set-row" id="btn-export"><span class="set-ico">&#8593;</span><span>Exporter une sauvegarde (.json)</span></button>
+      <label class="set-row">
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+        <span class="set-ico">&#8595;</span><span>Importer une sauvegarde</span>
+      </label>
+      <button class="set-row" id="btn-demo"><span class="set-ico">&#10022;</span><span>Charger 8 lineups d'exemple</span></button>
+    </div>
+    <div class="set-group">
+      <button class="set-row danger" id="btn-wipe"><span class="set-ico">&#9003;</span><span>Tout effacer</span></button>
+    </div>
+    <p class="set-foot">Nade Book &mdash; tes lineups sont stockes uniquement sur cet appareil.</p>
+    <div class="pad-bottom"></div>
+  </div>
+</section>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
