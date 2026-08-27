@@ -56,6 +56,7 @@ const state = {
   side:    'all',
   type:    'all',
   query:   '',
+  view:    localStorage.getItem('nadebook-view') || 'col2',  // col2 | col1
   current: null,      // lineup ouvert dans le detail
   editing: null,      // lineup en cours d'edition dans le formulaire
   draftMedia: [],     // medias du formulaire avant sauvegarde
@@ -287,6 +288,15 @@ async function renderList() {
   }
 }
 
+/** Applique la taille d'affichage choisie et la retient. */
+function applyView() {
+  const list = $('#lineup-list');
+  list.classList.toggle('col2', state.view === 'col2');
+  list.classList.toggle('col1', state.view === 'col1');
+  $$('#viewmode button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.view));
+  localStorage.setItem('nadebook-view', state.view);
+}
+
 function syncChips() {
   $$('#side-filter .chip').forEach(c => c.classList.toggle('active', c.dataset.side === state.side));
   $$('#type-filter .chip').forEach(c => c.classList.toggle('active', c.dataset.type === state.type));
@@ -297,6 +307,7 @@ function openList(scope) {
   state.side = 'all'; state.type = 'all'; state.query = '';
   $('#search').value = '';
   syncChips();
+  applyView();
   show('list');
   renderList();
 }
@@ -626,67 +637,80 @@ async function importPack(files, lazyFetch) {
   /* ---- Phase 2 : les videos, une par une.
      Chacune est isolee : une qui casse n'emporte pas les autres,
      et on sait laquelle et pourquoi. */
-  let ok = 0, fail = 0, firstErr = null;
+  let ok = 0, posters = 0, fail = 0, firstErr = null;
+
+  /** Fichier issu du selecteur, sinon recupere a la demande. null si absent. */
+  const grab = async (name) => {
+    if (!name) return null;
+    const direct = media.get(name);
+    if (direct) return direct;
+    if (!lazyFetch) return null;
+    try { return await lazyFetch(name); }
+    catch (e) {
+      if (!firstErr) firstErr = e;
+      console.error('[import] ' + name, e);
+      return null;
+    }
+  };
 
   for (let i = 0; i < lineups.length; i++) {
     const l = lineups[i];
-    if (!l.file) continue;
 
-    // Soit le fichier vient du selecteur, soit on le recupere a la demande.
-    // A la demande = un seul clip en memoire a la fois, au lieu des 400 Mo.
-    let file = media.get(l.file);
-    if (!file && lazyFetch) {
-      try { file = await lazyFetch(l.file); }
-      catch (e) { fail++; if (!firstErr) firstErr = e; console.error('[import] fetch ' + l.file, e); continue; }
-    }
-    if (!file) continue;
+    // Video et miniature sont traitees separement : on peut donc renvoyer
+    // un paquet de miniatures seules (quelques Mo) sans retransferer les
+    // videos deja presentes sur l'appareil.
+    const vid = await grab(l.file);
+    const pos = await grab(l.poster);
+    if (!vid && !pos) { if (l.file || l.poster) fail++; continue; }
 
     try {
-      const old = previous.get(l.id);
-      for (const m of (old && old.media) || []) {
-        if (m.blobId) await DB.deleteMedia(m.blobId);      // remplacement propre
-      }
-      if (old && old.poster) await DB.deleteMedia(old.poster);
-
-      const bid = uid();
-      await DB.putMedia(bid, file, file.type || 'video/mp4');
-
-      // Miniature : image du repere de visee. Sans elle, tous les clips
-      // d'une meme map montrent la meme premiere image (le spawn).
-      let posterId = '';
-      if (l.poster) {
-        let pf = media.get(l.poster);
-        if (!pf && lazyFetch) { try { pf = await lazyFetch(l.poster); } catch { pf = null; } }
-        if (pf) {
-          posterId = uid();
-          await DB.putMedia(posterId, pf, pf.type || 'image/jpeg');
-        }
-      }
-
       const cur = await DB.getLineup(l.id);
-      cur.media = [{ kind: 'video', blobId: bid }];
-      cur.poster = posterId;
+      if (!cur) continue;
+
+      if (vid) {
+        for (const m of cur.media || []) {
+          if (m.blobId) await DB.deleteMedia(m.blobId);     // remplacement propre
+        }
+        const bid = uid();
+        await DB.putMedia(bid, vid, vid.type || 'video/mp4');
+        cur.media = [{ kind: 'video', blobId: bid }];
+        ok++;
+      }
+
+      if (pos) {
+        if (cur.poster) await DB.deleteMedia(cur.poster);
+        const pid = uid();
+        await DB.putMedia(pid, pos, pos.type || 'image/jpeg');
+        cur.poster = pid;
+        posters++;
+      }
+
       await DB.putLineup(cur);
-      ok++;
     } catch (e) {
       fail++;
       if (!firstErr) firstErr = e;
-      console.error('[import] video ' + l.file, e);
+      console.error('[import] ' + l.id, e);
     }
-    if (i % 3 === 0) toast(`Vidéos ${ok}/${total}...`, 0);
+    if (i % 3 === 0) toast(`Médias ${i + 1}/${total}...`, 0);
   }
 
   await reload();
   closeSheets();
   show('maps');
 
+  const bilan = [
+    `${total} fiches`,
+    ok ? `${ok} vidéos` : '',
+    posters ? `${posters} miniatures` : '',
+  ].filter(Boolean).join(', ');
+
   if (!fail) {
-    toast(`${total} fiches, ${ok} vidéos importées`, 4000);
+    toast(bilan + ' — importé', 4500);
   } else {
     const txt = String(firstErr && (firstErr.name + ' ' + firstErr.message));
     const why = /quota|storage/i.test(txt) ? 'stockage saturé'
               : firstErr ? firstErr.name : 'erreur inconnue';
-    toast(`${total} fiches OK — ${fail} vidéos échouées (${why})`, 10000);
+    toast(`${bilan} — ${fail} échec(s) (${why})`, 10000);
   }
 }
 
@@ -821,6 +845,12 @@ function wire() {
   });
   $('#search').addEventListener('input', e => {
     state.query = e.target.value; renderList();
+  });
+
+  $('#viewmode').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.view = b.dataset.mode;
+    applyView();
   });
 
   $('#lineup-list').addEventListener('click', e => {

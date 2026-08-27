@@ -77,11 +77,19 @@
       </div>
       <div class="search-wrap">
         <input type="search" id="search" placeholder="Rechercher (spot, note...)" autocomplete="off">
+        <div class="viewmode" id="viewmode">
+          <button type="button" data-mode="col2" aria-label="Grille">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+          </button>
+          <button type="button" data-mode="col1" aria-label="Grandes images">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="8" rx="1.5"/><rect x="3" y="13" width="18" height="8" rx="1.5"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="scroll" id="lineup-scroll">
-      <div class="lineup-list" id="lineup-list"></div>
+      <div class="lineup-list cards col2" id="lineup-list"></div>
       <div class="empty" id="list-empty" hidden>
         <p class="empty-ico">&#9673;</p>
         <p class="empty-t">Aucun lineup ici</p>

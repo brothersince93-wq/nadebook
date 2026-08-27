@@ -129,12 +129,17 @@ function posterTime(ts, duration) {
   return +((duration || 20) * 0.4).toFixed(2);   // a defaut, 40% du clip
 }
 
+/* 960 px de large : l'iPhone affiche en 3x, donc une vignette de 190 pt
+   demande deja ~570 px reels, et une carte pleine largeur ~1200 px.
+   A 480 px c'etait flou des qu'on agrandissait. */
+const POSTER_W = 960;
+
 function makePoster(file, at) {
   const out = file.replace(/\.mp4$/i, '.jpg');
   // -ss avant -i : recherche rapide, sans decoder tout le debut
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error',
     '-ss', String(at), '-i', file,
-    '-frames:v', '1', '-q:v', '4', '-vf', 'scale=480:-2', out]);
+    '-frames:v', '1', '-q:v', '3', '-vf', `scale=${POSTER_W}:-2`, out]);
   return path.basename(out);
 }
 

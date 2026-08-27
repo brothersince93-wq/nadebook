@@ -199,9 +199,9 @@ button{ background:none; border:0; cursor:pointer; }
 .chip.t-he.active{    background:var(--c-he);    border-color:var(--c-he);    color:#111c00; }
 .chip.active i{ display:none; }
 
-.search-wrap{ margin-top:2px; }
+.search-wrap{ margin-top:2px; display:flex; gap:7px; align-items:center; }
 #search{
-  width:100%; padding:10px 13px;
+  flex:1; min-width:0; padding:10px 13px;
   border-radius:11px; border:1px solid var(--line);
   background:var(--card); color:var(--txt);
   font-size:15px; -webkit-appearance:none;
@@ -245,7 +245,46 @@ button{ background:none; border:0; cursor:pointer; }
   font-size:12.5px; color:var(--txt-2); margin-top:1px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.lu-tags{ display:flex; gap:5px; margin-top:6px; align-items:center; }
+.lu-tags{ display:flex; gap:5px; margin-top:6px; align-items:center; flex-wrap:wrap; }
+
+/* ---------- affichage en cartes ----------
+   Une vignette de 74 px ne permet pas de distinguer deux reperes de
+   visee d'un coup d'oeil. En carte, l'image occupe toute la largeur
+   de la colonne : ~190 pt en grille, ~400 pt en grand. */
+.lineup-list.cards{ display:grid; gap:11px; }
+.lineup-list.cards.col2{ grid-template-columns:1fr 1fr; }
+.lineup-list.cards.col1{ grid-template-columns:1fr; }
+
+.lineup-list.cards .lu{
+  flex-direction:column; align-items:stretch;
+  gap:0; padding:0; overflow:hidden;
+}
+.lineup-list.cards .lu-thumb{
+  width:100%; height:auto; aspect-ratio:4/3;
+  border-radius:0;
+}
+.lineup-list.cards .lu-thumb .ph{ font-size:26px; }
+.lineup-list.cards .lu-thumb .cnt{ bottom:6px; right:7px; font-size:11px; }
+.lineup-list.cards .lu-body{ padding:9px 11px 11px; }
+.lineup-list.cards .lu-title{ white-space:normal; }
+.lineup-list.cards .lu-route{ white-space:normal; }
+
+.lineup-list.cards.col1 .lu-title{ font-size:18px; }
+.lineup-list.cards.col1 .lu-route{ font-size:14px; margin-top:2px; }
+.lineup-list.cards.col1 .lu-body{ padding:12px 14px 14px; }
+.lineup-list.cards.col1 .tag{ font-size:11px; padding:3px 7px; }
+
+/* ---------- selecteur de taille ---------- */
+.viewmode{ display:flex; gap:4px; flex:none; }
+.viewmode button{
+  width:38px; height:38px; border-radius:10px;
+  background:var(--card); border:1px solid var(--line);
+  color:var(--txt-3); display:grid; place-items:center;
+  transition:transform .1s, background .15s, color .15s;
+}
+.viewmode button:active{ transform:scale(.9); }
+.viewmode button.on{ background:var(--txt); border-color:var(--txt); color:#0b0e14; }
+.viewmode svg{ width:17px; height:17px; fill:currentColor; }
 
 .tag{
   font-size:10px; font-weight:750; letter-spacing:.5px; text-transform:uppercase;

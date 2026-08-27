@@ -18,3 +18,10 @@ nadebook-*.json
 node_modules/
 .DS_Store
 Thumbs.db
+
+# archives de transfert : elles contiennent les videos
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
